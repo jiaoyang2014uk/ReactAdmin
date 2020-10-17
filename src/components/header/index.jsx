@@ -1,7 +1,6 @@
 import React, {Component} from 'react'
 import {withRouter} from 'react-router-dom'
 import { Modal } from 'antd';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
 import LinkButton from '../link-button'
 import {reqWeather} from '../../api'
 import menuList from '../../config/menuConfig'
@@ -44,7 +43,7 @@ class Header extends Component{
                 title = item.title
             } else if(item.children){
                 //在所有子item中查找匹配的
-                const cItem = item.children.find(cItem=>cItem.key === path)
+                const cItem = item.children.find(cItem=> path.indexOf(cItem.key) === 0)
                 //如果有值说明匹配
                 if(cItem){
                     //取出titlle
@@ -57,7 +56,6 @@ class Header extends Component{
 //退出登录
     logout = () => {
         confirm({
-            icon: <ExclamationCircleOutlined />,
             content: '确定退出吗？',
             onOk : () => {
               //删除保存的user数据
