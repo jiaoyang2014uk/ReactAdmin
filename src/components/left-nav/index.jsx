@@ -1,10 +1,12 @@
 import React, {Component} from 'react'
 import {Link, withRouter} from 'react-router-dom'
 import { Menu, Icon } from 'antd';
+import {connect} from 'react-redux'
 import logo from '../../assets/images/logo.png'
 import menuList from '../../config/menuConfig'
-import memoryUtils from '../../utils/memoryUtils'
+// import memoryUtils from '../../utils/memoryUtils'
 import './index.less'
+import {setHeadTitle} from '../../redux/actions'
 const { SubMenu } = Menu;
 
 /**
@@ -14,8 +16,10 @@ class LeftNav extends Component{
     //判断当前用户是否对item有权限
     hasAuth = (item) => {
         const {key, isPublic} = item
-        const menus = memoryUtils.user.role.menus
-        const username = memoryUtils.user.username
+        // const menus = memoryUtils.user.role.menus
+        // const username = memoryUtils.user.username
+        const menus = this.props.user.role.menus
+        const username = this.props.user.username
 
         //如果用户是admin
         //如果item是isPublic公开的
@@ -53,13 +57,18 @@ class LeftNav extends Component{
             if(this.hasAuth(item)){
                 //向pre中添加Menu.Item
                 if(!item.children){
+                    //判断item是否是当前对应的item
+                    if(item.key === path || path.indexOf(item.key)===0){
+                        //更新redux中headetitle中的状态
+                        this.props.setHeadTitle(item.title)
+                    }
                     pre.push((
                         <Menu.Item key={item.key} >
-                                <Link to={item.key}>
-                                    <Icon type={item.icon}/>
-                                    <span>{item.title}</span>
-                                </Link>
-                            </Menu.Item>
+                            <Link to={item.key} onClick={()=>this.props.setHeadTitle(item.title)}>
+                                <Icon type={item.icon}/>
+                                <span>{item.title}</span>
+                            </Link>
+                        </Menu.Item>
                     ))
                 } else {
                     //查找一个与当前请求路径匹配的子item
@@ -122,4 +131,7 @@ class LeftNav extends Component{
  * 包装非路由组件，返回新组件
  * 新组件向非路由组件传递三个属性：history location match
  */
-export default withRouter(LeftNav)
+export default connect(
+    state=>({user: state.user}),
+    {setHeadTitle}
+)(withRouter(LeftNav))

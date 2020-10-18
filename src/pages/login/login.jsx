@@ -1,11 +1,13 @@
 import React, {Component} from 'react'
 import {Redirect} from 'react-router-dom'
 import { Form, Input, Button, message, Icon } from 'antd';
+import {connect} from 'react-redux'
 import './login.less'
 import logo from '../../assets/images/logo.png'
-import {reqLogin} from '../../api'
-import memoryUtils from '../../utils/memoryUtils'
-import storageUtils from '../../utils/storageUtils'
+// import {reqLogin} from '../../api'
+// import memoryUtils from '../../utils/memoryUtils'
+// import storageUtils from '../../utils/storageUtils'
+import {login} from '../../redux/actions'
 
 //登陆的路由组件
 class Login extends Component{
@@ -19,6 +21,11 @@ class Login extends Component{
             if (!err) { 
                 // console.log('提交登陆的 ajax 请求', values) 
                 const {username, password} = values 
+
+                //调用分发异步action的函数，发登录异步请求，有了结果后更新状态
+                this.props.login(username, password)
+
+                /*
                 const result = await reqLogin(username, password) 
                 // console.log('login()', result) 
                 if(result.status === 0) { 
@@ -28,12 +35,13 @@ class Login extends Component{
                     const user = result.data
                     memoryUtils.user = user
                     storageUtils.saveUser(user)
-                    // 跳转到主页面 
-                    this.props.history.replace('/') 
+                    // 跳转到主页面 （不需要回退到登录）
+                    this.props.history.replace('/home') 
                 } else { 
                         // 登录失败, 提示错误 
                         message.error(result.msg) 
                     } 
+                    */
                 } else { 
                     console.log('检验失败!') 
                 } 
@@ -58,10 +66,14 @@ class Login extends Component{
 
     render(){
         //如果用户已经登录，自动调整到管理界面
-        const user = memoryUtils.user
+        // const user = memoryUtils.user
+        const user = this.props.user
         if(user && user._id){
-            return <Redirect to='/'/>
+            return <Redirect to='/home'/>
         }
+
+        const errorMsg = this.props.user.errorMsg
+
         // 得到具强大功能的 form 对象 
         const form = this.props.form 
         const { getFieldDecorator } = form;
@@ -72,6 +84,7 @@ class Login extends Component{
                     <h1>React项目： 后台管理系统</h1>
                 </header>
                 <section className='login-content'>
+                <div className={user.errorMsg ? 'error-msg show' : 'error-msg'}>{user.errorMsg}</div>
                     <h2>用户登录</h2>
                     <Form
                         className="login-form"
@@ -115,4 +128,7 @@ class Login extends Component{
 }
 const WrapLogin = Form.create()(Login)
 
-export default WrapLogin
+export default connect(
+    state => ({user: state.user}),
+    {login}
+)(WrapLogin)
